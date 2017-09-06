@@ -1,0 +1,6 @@
+---
+- name: Create user
+  user: 
+    name: drupaluser 
+    password: "{{ user_password }}" 
+    shell: /bin/bash

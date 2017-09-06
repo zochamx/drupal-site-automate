@@ -1,0 +1,45 @@
+---
+- name: Clone drupal site (no update)
+  git:
+    repo: https://github.com/zochamx/drupal-site.git
+    dest: /home/drupaluser/drupal-site
+    update: no
+    accept_hostkey: yes
+
+- name: Set general site's permissions
+  file:
+    path: /home/drupaluser/drupal-site
+    state: directory
+    owner: drupaluser
+    group: www-data
+    mode: 0750
+    recurse: yes
+
+- name: Set site's files only permissions
+  shell: find . -type f -exec chmod u=rw,g=r,o= '{}' \;
+  args: 
+    chdir: /home/drupaluser/drupal-site
+
+- name: Set site's specific permissions
+  file:
+    path: /home/drupaluser/drupal-site/sites/{{ item }}
+    state: directory
+    owner: drupaluser
+    group: www-data
+    mode: 0770
+    recurse: yes
+  with_items:
+      - default/files
+      - default/private
+      - default
+
+- name: Deploy site and civicrm settings
+  template:
+    src: "{{ item.tmpl }}"
+    dest: /home/drupaluser/drupal-site/sites/default/{{ item.name }}
+    owner: drupaluser
+    group: www-data
+    mode: 0770
+  with_items:
+      - { tmpl: default.settings.php.j2, name: settings.php }
+      #- { tmpl: civicrm.settings.php.j2, name: civicrm.settings.php }
